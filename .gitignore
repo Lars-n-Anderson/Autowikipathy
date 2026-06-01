@@ -1,0 +1,2 @@
+# Runtime state is seeded at install time into a user's repo — never ship it from source.
+template/autowikipathy/.state/
