@@ -1,7 +1,8 @@
 # Autowikipathy installer (Windows). Run from the ROOT of the git repo to add it to:
-#   powershell -File install.ps1 [path-to-Autowikipathy-source]
+#   powershell -File install.ps1 [path-to-Autowikipathy-source] [-WikiDir PATH]
+#   -WikiDir PATH : reuse an existing wiki folder instead of scaffolding one.
 # Idempotent: safe to re-run.
-param([string]$Src = $PSScriptRoot)
+param([string]$Src = $PSScriptRoot, [string]$WikiDir = '')
 $ErrorActionPreference = 'Stop'
 if (-not (Test-Path .git)) { Write-Error 'Run from the root of a git repository (no .git here).'; exit 1 }
 if (-not (Test-Path (Join-Path $Src 'template/autowikipathy'))) { Write-Error "Autowikipathy source not found at $Src/template"; exit 1 }
@@ -10,7 +11,17 @@ $mark = '# autowikipathy-hook'
 # 1. Scaffold autowikipathy/ if absent; always ensure runtime state exists.
 if (-not (Test-Path autowikipathy)) {
   Copy-Item -Recurse (Join-Path $Src 'template/autowikipathy') autowikipathy
-  Write-Host '  + scaffolded autowikipathy/'
+  if ($WikiDir -ne '') {
+    # Reuse an existing wiki dir: rewrite the wiki_dir knob (no inline comment in
+    # the replacement) and drop the bundled autowikipathy/wiki/.
+    $knobs = 'autowikipathy/KNOBS.md'
+    (Get-Content $knobs) -replace '^(\s*wiki_dir:)\s*.*', "`$1 $WikiDir" |
+      Set-Content -Path $knobs
+    Remove-Item -Recurse -Force autowikipathy/wiki
+    Write-Host "  + scaffolded autowikipathy/ (reusing wiki dir: $WikiDir)"
+  } else {
+    Write-Host '  + scaffolded autowikipathy/'
+  }
 } else {
   Write-Host '  = autowikipathy/ already present (left as-is)'
 }

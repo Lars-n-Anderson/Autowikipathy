@@ -15,7 +15,8 @@ exists. If it does, then **before any other substantive work**:
    `autowikipathy/KNOBS.md` (a deeper, longer entry).
 3. On the user's choice, **dispatch a subagent** instructed to follow
    `autowikipathy/WRITER.md` (and read `autowikipathy/KNOBS.md`) to research one
-   concept, verify its citations, and write one entry into `autowikipathy/wiki/`,
+   concept, verify its citations, and write one entry into the wiki dir named in
+   `autowikipathy/KNOBS.md` (`wiki_dir`, default `autowikipathy/wiki/`),
    updating `index.md`. Running it as a subagent keeps this session's context clean.
 4. When the subagent finishes — **or if the user skips** — delete
    `autowikipathy/.state/DUE` and reset `autowikipathy/.state/count` to `0`.

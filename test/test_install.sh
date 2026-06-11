@@ -30,4 +30,16 @@ m=$(grep -c "AUTOWIKIPATHY:BEGIN" "$rules" || true)
 [ -f autowikipathy/KNOBS.md ] || { echo "FAIL: uninstall ate KNOBS.md"; exit 1; }
 [ -d autowikipathy/wiki ]     || { echo "FAIL: uninstall ate wiki/"; exit 1; }
 
+# --- --wiki-dir reuses an existing dir: rewrites the knob, skips the scaffold ---
+tmp3=$(mktemp -d)
+cd "$tmp3"
+git init -q && git config user.email t@t && git config user.name t
+sh "$REPO/install.sh" "$REPO" --wiki-dir research >/dev/null
+grep -qE '^[[:space:]]*wiki_dir:[[:space:]]*research[[:space:]]*$' autowikipathy/KNOBS.md \
+  || { echo "FAIL: wiki_dir not rewritten to research"; grep wiki_dir autowikipathy/KNOBS.md; exit 1; }
+[ ! -d autowikipathy/wiki ] || { echo "FAIL: wiki/ scaffolded despite --wiki-dir"; exit 1; }
+# No junk file from a sed-delimiter collision.
+ls -A | grep -q '#' && { echo "FAIL: junk file created by install"; ls -A; exit 1; }
+rm -rf "$tmp3"
+
 echo "PASS test_install"

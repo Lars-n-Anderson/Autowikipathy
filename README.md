@@ -43,6 +43,7 @@ This adds an `autowikipathy/` folder, installs the `post-commit` hook, and appen
 | `jargon_density` | `medium` | `low` \| `medium` \| `high` — plain-language vs. domain-dense. |
 | `depth_boost` | `1.5` | Length/depth multiplier when 2+ topic lenses agree on the same concept. |
 | `min_sources` | `3` | Minimum independent sources before an entry may be marked `verified`. |
+| `wiki_dir` | `autowikipathy/wiki` | Where entries + `_gaps.md` live; point at an existing wiki folder to reuse it. |
 
 ## Uninstall
 

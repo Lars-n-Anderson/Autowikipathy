@@ -1,9 +1,22 @@
 #!/bin/sh
 # Autowikipathy installer. Run from the ROOT of the git repo you want to add it to:
-#   sh install.sh [path-to-Autowikipathy-source]
+#   sh install.sh [path-to-Autowikipathy-source] [--wiki-dir PATH]
+#   --wiki-dir PATH : reuse an existing wiki folder instead of scaffolding one.
 # Idempotent: safe to re-run.
 set -e
-SRC="${1:-$(cd "$(dirname "$0")" && pwd)}"
+
+# Parse args: a positional SRC (kit dir) plus an optional --wiki-dir <path>.
+SRC=""
+WIKI_DIR=""
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --wiki-dir) WIKI_DIR="${2:-}"; shift 2 ;;
+    --wiki-dir=*) WIKI_DIR="${1#--wiki-dir=}"; shift ;;
+    *) [ -z "$SRC" ] && SRC="$1"; shift ;;
+  esac
+done
+[ -n "$SRC" ] || SRC="$(cd "$(dirname "$0")" && pwd)"
+
 [ -d .git ] || { echo "Error: run from the root of a git repository (no .git here)." >&2; exit 1; }
 [ -d "$SRC/template/autowikipathy" ] || { echo "Error: Autowikipathy source not found at $SRC/template" >&2; exit 1; }
 
@@ -12,7 +25,19 @@ MARK="# autowikipathy-hook"
 # 1. Scaffold autowikipathy/ if absent; always ensure runtime state exists.
 if [ ! -d autowikipathy ]; then
   cp -R "$SRC/template/autowikipathy" autowikipathy
-  echo "  + scaffolded autowikipathy/"
+  if [ -n "$WIKI_DIR" ]; then
+    # Reuse an existing wiki dir: rewrite the wiki_dir knob and drop the
+    # bundled autowikipathy/wiki/. Pipe delimiter (a path never holds '|') and
+    # no inline comment in the replacement — a '#' there would collide with the
+    # delimiter and emit a junk file.
+    tmpf="autowikipathy/KNOBS.md.tmp.$$"
+    sed -E "s|^([[:space:]]*wiki_dir:)[[:space:]]*.*|\1 ${WIKI_DIR}|" \
+      autowikipathy/KNOBS.md > "$tmpf" && mv "$tmpf" autowikipathy/KNOBS.md
+    rm -rf autowikipathy/wiki
+    echo "  + scaffolded autowikipathy/ (reusing wiki dir: $WIKI_DIR)"
+  else
+    echo "  + scaffolded autowikipathy/"
+  fi
 else
   echo "  = autowikipathy/ already present (left as-is)"
 fi
