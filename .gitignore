@@ -1,2 +1,5 @@
-# Runtime state is seeded at install time into a user's repo — never ship it from source.
-template/autowikipathy/.state/
+# This repo doubles as Lars's own live, installed instance of the tool. His actual research
+# content and runtime state must never ship in the public source tree — only the skills,
+# CLAUDE.md runbook, KNOBS.md, and OKF-SPEC.md do.
+/research/
+/autowikipathy/
